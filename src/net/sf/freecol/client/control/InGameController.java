@@ -4336,11 +4336,7 @@ public final class InGameController implements NetworkConstants {
         UnitWas unitWas = new UnitWas(unit);
         boolean ret = askServer().putOutsideColony(unit)
             && unit.getLocation() == colony.getTile();
-        if (ret) {
-            colonyWas.fireChanges();
-            unitWas.fireChanges();
-            updateGUI(null);
-        }
+        changeWorkLoc(colonyWas, unitWas, ret);
         return ret;
     }
 
@@ -4997,27 +4993,53 @@ public final class InGameController implements NetworkConstants {
             && !gui.confirmAbandonEducation(unit, false)) return false;
 
         Colony colony = workLocation.getColony();
-        if (workLocation instanceof ColonyTile) {
-            Tile tile = ((ColonyTile)workLocation).getWorkTile();
-            if (tile.hasLostCityRumour()) {
-                gui.showInformationMessage("tileHasRumour");
-                return false;
-            }
-            if (!unit.getOwner().owns(tile)) {
-                if (!claimTile(tile, colony)) return false;
-            }
-        }
+        checkWorkLocation(unit, workLocation, colony);
 
         // Try to change the work location.
         ColonyWas colonyWas = new ColonyWas(colony);
         UnitWas unitWas = new UnitWas(unit);
         boolean ret = askServer().work(unit, workLocation)
             && unit.getLocation() == workLocation;
-        if (ret) {
+        changeWorkLoc(colonyWas, unitWas, ret);
+        return ret;
+    }
+
+
+	/**
+	 * Try to change the work location
+	 * @param colonyWas
+	 * @param unitWas
+	 * @param ret
+	 */
+	public void changeWorkLoc(ColonyWas colonyWas, UnitWas unitWas, boolean ret) {
+		if (ret) {
             colonyWas.fireChanges();
             unitWas.fireChanges();
             updateGUI(null);
         }
-        return ret;
-    }
+	}
+
+
+	/**
+	 * Checks the work location for lostCityRumour and for 
+	 * an owner
+	 * @param unit
+	 * @param workLocation
+	 * @param colony
+	 * @return 
+	 */
+	public boolean checkWorkLocation(Unit unit, WorkLocation workLocation, Colony colony) {
+		if (workLocation instanceof ColonyTile) {
+            Tile tile = ((ColonyTile)workLocation).getWorkTile();
+            if (tile.hasLostCityRumour()) {
+                gui.showInformationMessage("tileHasRumour");
+                return false;
+            }
+            if (!unit.getOwner().owns(tile)) {
+                if (!claimTile(tile, colony)) 
+                	return false;
+            }
+        }
+		return false;
+	}
 }
