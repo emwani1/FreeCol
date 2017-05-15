@@ -818,7 +818,32 @@ public final class InGameController implements NetworkConstants {
             gui.setActiveUnit(unit);
             if (moveToDestination(unit, messages)) stillActive = unit;
         }
-        if (!messages.isEmpty()) {
+        checkMessage(player, active, stillActive, messages);
+
+        // The active unit might also be a going-to unit.  Make sure it
+        // gets processed first.  setNextGoingToUnit will fail harmlessly
+        // if it is not a going-to unit so this is safe.
+        if (active != null) player.setNextGoingToUnit(active);
+
+        // Process all units.
+        stillActive = processAllUnits(player, stillActive);
+        gui.setActiveUnit((stillActive != null) ? stillActive : active);
+        return stillActive == null;
+    }
+
+
+	/**
+	 * Checks whether the messages are empty. 
+	 * Returns false if messages arent empty and true 
+	 * if they are.
+	 * @param player
+	 * @param active
+	 * @param stillActive
+	 * @param messages
+	 * @return 
+	 */
+	public boolean checkMessage(final Player player, final Unit active, Unit stillActive, List<ModelMessage> messages) {
+		if (!messages.isEmpty()) {
             for (ModelMessage m : messages) {
                 player.addModelMessage(m);
                 turnReportMessages.add(m);
@@ -827,14 +852,19 @@ public final class InGameController implements NetworkConstants {
             gui.setActiveUnit((stillActive != null) ? stillActive : active);
             return false;
         }
+		return true;
+	}
 
-        // The active unit might also be a going-to unit.  Make sure it
-        // gets processed first.  setNextGoingToUnit will fail harmlessly
-        // if it is not a going-to unit so this is safe.
-        if (active != null) player.setNextGoingToUnit(active);
 
-        // Process all units.
-        while (player.hasNextGoingToUnit()) {
+	/**
+	 * Processes all units returns if unit is still
+	 * active or not
+	 * @param player
+	 * @param stillActive
+	 * @return
+	 */
+	public Unit processAllUnits(final Player player, Unit stillActive) {
+		while (player.hasNextGoingToUnit()) {
             Unit unit = player.getNextGoingToUnit();
             gui.setActiveUnit(unit);
             // Move the unit as much as possible
@@ -850,9 +880,8 @@ public final class InGameController implements NetworkConstants {
                 break;
             }
         }
-        gui.setActiveUnit((stillActive != null) ? stillActive : active);
-        return stillActive == null;
-    }
+		return stillActive;
+	}
 
     /**
      * End the turn.
