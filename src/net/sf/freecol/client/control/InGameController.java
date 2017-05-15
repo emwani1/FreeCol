@@ -1406,6 +1406,8 @@ public final class InGameController implements NetworkConstants {
 
 
 	/**
+	 * Handles if user chooses to attack a colony or if 
+	 * a tribute occurs. 
 	 * @param unit
 	 * @param direction
 	 * @param target
@@ -1526,25 +1528,36 @@ public final class InGameController implements NetworkConstants {
                                    Messages.message("disembark.text"),
                                    unit,
                                    "none", choices);
-            if (u == null) {
-                // Cancelled, done.
-            } else if (u == unit) {
-                // Disembark all.
-                for (Unit dUnit : disembarkable) {
-                    // Guard against loss of control when asking the
-                    // server to move the unit.
-                    try {
-                        moveDirection(dUnit, direction, false);
-                    } finally {
-                        continue;
-                    }
-                }
-            } else {
-                moveDirection(u, direction, false);
-            }
+            disembarkAll(unit, direction, disembarkable, u);
         }
         return true;
     }
+
+
+	/**
+	 * @param unit
+	 * @param direction
+	 * @param disembarkable
+	 * @param u
+	 */
+	public void disembarkAll(Unit unit, final Direction direction, final List<Unit> disembarkable, Unit u) {
+		if (u == null) {
+		    // Cancelled, done.
+		} else if (u == unit) {
+		    // Disembark all.
+		    for (Unit dUnit : disembarkable) {
+		        // Guard against loss of control when asking the
+		        // server to move the unit.
+		        try {
+		            moveDirection(dUnit, direction, false);
+		        } finally {
+		            continue;
+		        }
+		    }
+		} else {
+		    moveDirection(u, direction, false);
+		}
+	}
 
     /**
      * Embarks the specified unit onto a carrier in a specified direction
