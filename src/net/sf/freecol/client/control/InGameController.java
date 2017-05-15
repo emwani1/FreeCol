@@ -970,10 +970,7 @@ public final class InGameController implements NetworkConstants {
         if (unit != null && unit.couldMove()) return false;
 
         // Flush any outstanding orders once the mode is raised.
-        if (moveMode != MoveMode.NEXT_ACTIVE_UNIT
-            && !doExecuteGotoOrders()) {
-            return false;
-        }
+        flush();
 
         // Successfully found a unit to display
         if (player.hasNextActiveUnit()) {
@@ -990,14 +987,38 @@ public final class InGameController implements NetworkConstants {
         // If not already ending the turn, use the fallback tile if
         // supplied, then check for automatic end of turn, otherwise
         // just select nothing and wait.
-        final ClientOptions options = freeColClient.getClientOptions();
+        fallbackOption(tile);
+        return true;
+    }
+
+
+	/**
+	 * Flushes any outstanding orders once the mode is raised
+	 * @return 
+	 * 
+	 */
+	public boolean flush() {
+		if (moveMode != MoveMode.NEXT_ACTIVE_UNIT
+            && !doExecuteGotoOrders()) {
+            return false;
+        }
+		return true;
+	}
+
+
+	/**
+	 * Uses the fallback tile if it is supplied if the turn is 
+	 * not ending. If not it does nothing and waits.
+	 * @param tile
+	 */
+	public void fallbackOption(Tile tile) {
+		final ClientOptions options = freeColClient.getClientOptions();
         if (tile != null) {
             gui.setSelectedTile(tile);
         } else if (options.getBoolean(ClientOptions.AUTO_END_TURN)) {
             doEndTurn(options.getBoolean(ClientOptions.SHOW_END_TURN_DIALOG));
         }
-        return true;
-    }
+	}
 
 
     // Movement support.
