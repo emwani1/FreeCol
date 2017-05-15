@@ -890,20 +890,7 @@ public final class InGameController implements NetworkConstants {
      * @return True if the turn ended.
      */
     private boolean doEndTurn(boolean showDialog) {
-        if (showDialog) {
-            List<Unit> units = freeColClient.getMyPlayer().getUnits().stream()
-                .filter(Unit::couldMove).collect(Collectors.toList());
-            if (!units.isEmpty()) {
-                // Modal dialog takes over
-                gui.showEndTurnDialog(units,
-                    (Boolean value) -> {
-                        if (value != null && value) {
-                            endTurn(false);
-                        }
-                    });
-                return false;
-            }
-        }
+        showDialog(showDialog);
 
         // Ensure end-turn mode sticks.
         moveMode = moveMode.maximize(MoveMode.END_TURN);
@@ -941,6 +928,29 @@ public final class InGameController implements NetworkConstants {
         // Inform the server of end of turn.
         return askServer().endTurn();
     }
+
+
+	/**
+	 * @param showDialog
+	 * @return 
+	 */
+	public boolean showDialog(boolean showDialog) {
+		if (showDialog) {
+            List<Unit> units = freeColClient.getMyPlayer().getUnits().stream()
+                .filter(Unit::couldMove).collect(Collectors.toList());
+            if (!units.isEmpty()) {
+                // Modal dialog takes over
+                gui.showEndTurnDialog(units,
+                    (Boolean value) -> {
+                        if (value != null && value) {
+                            endTurn(false);
+                        }
+                    });
+                return false;
+            }
+        }
+		return true;
+	}
 
     /**
      * Makes a new unit active if any, or focus on a tile (useful if the
