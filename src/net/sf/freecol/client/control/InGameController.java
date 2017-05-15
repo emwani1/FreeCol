@@ -1039,16 +1039,55 @@ public final class InGameController implements NetworkConstants {
             || unit.getMovesLeft() <= 0
             || unit.getState() == UnitState.SKIPPED) {
             return false;
-        } else if (unit.getTradeRoute() != null) {
+        } 
+        else if (unit.getTradeRoute() != null) {
             return followTradeRoute(unit, messages);
-        } else if ((destination = unit.getDestination()) == null) {
+        } 
+        else if ((destination = unit.getDestination()) == null) {
             return unit.getMovesLeft() > 0;
         }
 
         // Find a path to the destination and try to follow it.
         final Player player = freeColClient.getMyPlayer();
         PathNode path = unit.findPath(destination);
-        if (path == null) {
+        findPath(unit, destination, player, path);
+        gui.setActiveUnit(unit);
+
+        // Clear ordinary destinations if arrived.
+        clearDestination(unit, destination, path);
+        return false;
+    }
+
+
+	/**
+	 * @param unit
+	 * @param destination
+	 * @param path
+	 * @return 
+	 */
+	public boolean clearDestination(Unit unit, Location destination, PathNode path) {
+		if (movePath(unit, path) && unit.isAtLocation(destination)) {
+            askClearGotoOrders(unit);
+            Colony colony = (unit.hasTile()) ? unit.getTile().getColony()
+                : null;
+            if (colony != null && !checkCashInTreasureTrain(unit)) {
+                colonyPanel(colony, unit);
+            }
+            return unit.couldMove();
+        }
+		return false;
+	}
+
+
+	/**
+	 * @param unit
+	 * @param destination
+	 * @param player
+	 * @param path
+	 * @return 
+	 */
+	public boolean findPath(Unit unit, Location destination, final Player player, PathNode path) {
+		if (path == null) {
             StringTemplate src = unit.getLocation()
                 .getLocationLabelFor(player);
             StringTemplate dst = destination.getLocationLabelFor(player);
@@ -1061,20 +1100,8 @@ public final class InGameController implements NetworkConstants {
             gui.showInformationMessage(unit, template);
             return false;
         }
-        gui.setActiveUnit(unit);
-
-        // Clear ordinary destinations if arrived.
-        if (movePath(unit, path) && unit.isAtLocation(destination)) {
-            askClearGotoOrders(unit);
-            Colony colony = (unit.hasTile()) ? unit.getTile().getColony()
-                : null;
-            if (colony != null && !checkCashInTreasureTrain(unit)) {
-                colonyPanel(colony, unit);
-            }
-            return unit.couldMove();
-        }
-        return false;
-    }
+		return false;
+	}
 
     /**
      * Move a unit in a given direction.
