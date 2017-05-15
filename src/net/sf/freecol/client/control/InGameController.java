@@ -1535,6 +1535,8 @@ public final class InGameController implements NetworkConstants {
 
 
 	/**
+	 * Checks the unit to see if it can be disembarked 
+	 * or not
 	 * @param unit
 	 * @param direction
 	 * @param disembarkable
@@ -1575,13 +1577,7 @@ public final class InGameController implements NetworkConstants {
         Tile destinationTile = sourceTile.getNeighbourOrNull(direction);
         Unit carrier = null;
         List<ChoiceItem<Unit>> choices = new ArrayList<>();
-        for (Unit u : destinationTile.getUnitList()) {
-            if (u.canAdd(unit)) {
-                String m = u.getDescription(Unit.UnitLabelType.NATIONAL);
-                choices.add(new ChoiceItem<>(m, u));
-                carrier = u; // Save a default
-            }
-        }
+        carrier = addUnit(unit, destinationTile, carrier, choices);
         if (choices.isEmpty()) {
             throw new RuntimeException("Unit " + unit.getId()
                 + " found no carrier to embark upon.");
@@ -1605,6 +1601,25 @@ public final class InGameController implements NetworkConstants {
         unit.getOwner().invalidateCanSeeTiles();
         return false;
     }
+
+
+	/**
+	 * @param unit
+	 * @param destinationTile
+	 * @param carrier
+	 * @param choices
+	 * @return
+	 */
+	public Unit addUnit(Unit unit, Tile destinationTile, Unit carrier, List<ChoiceItem<Unit>> choices) {
+		for (Unit u : destinationTile.getUnitList()) {
+            if (u.canAdd(unit)) {
+                String m = u.getDescription(Unit.UnitLabelType.NATIONAL);
+                choices.add(new ChoiceItem<>(m, u));
+                carrier = u; // Save a default
+            }
+        }
+		return carrier;
+	}
 
     /**
      * Confirm exploration of a lost city rumour, following a move of
