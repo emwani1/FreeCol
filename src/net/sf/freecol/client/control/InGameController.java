@@ -4907,14 +4907,26 @@ public final class InGameController implements NetworkConstants {
         ColonyWas colonyWas = (colony == null) ? null : new ColonyWas(colony);
         UnitWas unitWas = new UnitWas(carrier);
         boolean ret = askUnloadGoods(goods.getType(), goods.getAmount(), carrier);
-        if (ret) {
+        checkUnload(dump, colonyWas, unitWas, ret);
+        return ret;
+    }
+
+
+	/**
+	 * Performs the unload of the cargo
+	 * @param dump
+	 * @param colonyWas
+	 * @param unitWas
+	 * @param ret
+	 */
+	public void checkUnload(boolean dump, ColonyWas colonyWas, UnitWas unitWas, boolean ret) {
+		if (ret) {
             if (!dump) sound("sound.event.unloadCargo");
             if (colonyWas != null) colonyWas.fireChanges();
             unitWas.fireChanges();
             updateGUI(null);
         }
-        return ret;
-    }
+	}
 
     /**
      * Updates a trade route.
