@@ -369,25 +369,39 @@ public final class InGameController implements NetworkConstants {
         final Player owner = tile.getOwner();
         if (price < 0) { // not for sale
             return false;
-        } else if (price > 0) { // for sale
+        } 
+        else if (price > 0) { // for sale
             ClaimAction act = gui.getClaimChoice(tile, player, price, owner);
-            if (act == null) return false; // Cancelled
-            switch (act) {
-            case ACCEPT: // accepted price
-                break;
-            case STEAL:
-                price = NetworkConstants.STEAL_LAND;
-                break;
-            default:
-                logger.warning("Claim dialog fail: " + act);
-                return false;
-            }
+            if (act == null) 
+            	return false; // Cancelled
+            
+            price = getPrice(price, act);
         } // else price == 0 and we can just proceed to claim
 
         // Ask the server
         return askServer().claimTile(tile, claimant, price)
             && player.owns(tile);
     }
+
+
+	/**
+	 * @param price
+	 * @param act
+	 * @return
+	 */
+	public int getPrice(int price, ClaimAction act) {
+		switch (act) {
+			case ACCEPT: // accepted price
+				break;
+			case STEAL:
+				price = NetworkConstants.STEAL_LAND;
+				break;
+			default:
+				logger.warning("Claim dialog fail: " + act);
+				break;
+		}
+		return price;
+	}
 
     /**
      * Clears the goto orders of the given unit by setting its destination
