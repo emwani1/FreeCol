@@ -538,14 +538,27 @@ public final class InGameController implements NetworkConstants {
         }
 
         // Try to purchase.
-        int oldAmount = carrier.getGoodsContainer().getGoodsCount(type);
+        tryToPurchase(loc, type, amount, carrier, marketWas);
+        return false;
+    }
+
+	/**
+	 * @param loc
+	 * @param type
+	 * @param amount
+	 * @param carrier
+	 * @param marketWas
+	 * @return 
+	 */
+	public boolean tryToPurchase(Location loc, GoodsType type, int amount, Unit carrier, MarketWas marketWas) {
+		int oldAmount = carrier.getGoodsContainer().getGoodsCount(type);
         if (askServer().loadGoods(loc, type, amount, carrier)
             && carrier.getGoodsContainer().getGoodsCount(type) != oldAmount) {
             if (marketWas != null) marketWas.fireChanges(type, amount);
             return true;
         }
         return false;
-    }
+	}
 
     /**
      * Set a destination for a unit.
