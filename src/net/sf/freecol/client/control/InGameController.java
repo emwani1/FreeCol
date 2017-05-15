@@ -834,7 +834,7 @@ public final class InGameController implements NetworkConstants {
 
 	/**
 	 * Checks whether the messages are empty. 
-	 * Returns false if messages arent empty and true 
+	 * Returns false if messages aren't empty and true 
 	 * if they are.
 	 * @param player
 	 * @param active
@@ -1060,6 +1060,7 @@ public final class InGameController implements NetworkConstants {
 
 
 	/**
+	 * 
 	 * @param unit
 	 * @param destination
 	 * @param path
@@ -1399,7 +1400,22 @@ public final class InGameController implements NetworkConstants {
         ArmedUnitSettlementAction act
             = gui.getArmedUnitSettlementChoice(settlement);
         if (act == null) return true; // Cancelled
-        switch (act) {
+        settlementActType(unit, direction, target, settlement, act);
+        return true;
+    }
+
+
+	/**
+	 * @param unit
+	 * @param direction
+	 * @param target
+	 * @param settlement
+	 * @param act
+	 * @return True if the unit could move further 
+	 */
+	public boolean settlementActType(Unit unit, Direction direction, Tile target, Settlement settlement,
+			ArmedUnitSettlementAction act) {
+		switch (act) {
         case SETTLEMENT_ATTACK:
             if (gui.confirmHostileAction(unit, target)
                 && gui.confirmPreCombat(unit, target)) {
@@ -1425,8 +1441,8 @@ public final class InGameController implements NetworkConstants {
             logger.warning("showArmedUnitSettlementDialog fail: " + act);
             break;
         }
-        return true;
-    }
+		return true;
+	}
 
     /**
      * Initiates diplomacy with a foreign power.
