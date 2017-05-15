@@ -4623,10 +4623,10 @@ public final class InGameController implements NetworkConstants {
      * @return True if the current player changes.
      */
     public boolean setCurrentPlayer(Player player) {
-        if (FreeColDebugger.isInDebugMode(FreeColDebugger.DebugMode.MENUS)
-            && freeColClient.currentPlayerIsMyPlayer()) {
-            gui.closeMenus();
-        }
+    	if (FreeColDebugger.isInDebugMode(FreeColDebugger.DebugMode.MENUS)
+                && freeColClient.currentPlayerIsMyPlayer()) {
+                gui.closeMenus();
+            }
         FreeColDebugger.finishDebugRun(freeColClient, false);
 
         final Game game = freeColClient.getGame();
@@ -4651,14 +4651,7 @@ public final class InGameController implements NetworkConstants {
 
             // Check for emigration.
             Europe europe = player.getEurope();
-            if (player.hasAbility(Ability.SELECT_RECRUIT)) {
-                emigration(player, 0, false);
-            } else {
-                while (player.checkEmigrate()) {
-                    askEmigrate(europe,
-                        Europe.MigrationType.getUnspecificSlot());
-                }
-            }
+            checkEmigration(player, europe);
             
             // Wake up human!
             if (!freeColClient.isSinglePlayer()) {
@@ -4670,6 +4663,22 @@ public final class InGameController implements NetworkConstants {
         }
         return true;
     }
+
+	/**
+	 * Checks for emigration of player 
+	 * @param player
+	 * @param europe
+	 */
+	public void checkEmigration(Player player, Europe europe) {
+		if (player.hasAbility(Ability.SELECT_RECRUIT)) {
+		    emigration(player, 0, false);
+		} else {
+		    while (player.checkEmigrate()) {
+		        askEmigrate(europe,
+		            Europe.MigrationType.getUnspecificSlot());
+		    }
+		}
+	}
 
     /**
      * Set a player to be dead.
@@ -4766,7 +4775,8 @@ public final class InGameController implements NetworkConstants {
         Stance old = first.getStance(second);
         try {
             first.setStance(second, stance);
-        } catch (IllegalStateException e) {
+        } 
+        catch (IllegalStateException e) {
             logger.log(Level.WARNING, "Illegal stance transition", e);
             return false;
         }
