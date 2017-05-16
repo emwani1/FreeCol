@@ -4833,24 +4833,47 @@ public final class InGameController implements NetworkConstants {
         boolean ret = askSetDestination(unit, destination);
         if (ret) {
             if (destination instanceof Europe) {
-                if (unit.hasTile()
-                    && unit.getTile().isDirectlyHighSeasConnected()) {
-                    moveTo(unit, destination);
-                } else {
-                    moveToDestination(unit, null);
-                }
-            } else {
-                if (unit.isInEurope()) {
-                    moveTo(unit, destination);
-                } else {
-                    moveToDestination(unit, null);
-                }
-            }
+                instOfEurope(unit, destination);
+            } else
+				destinationInEurope(unit, destination);
             unitWas.fireChanges();
             updateGUI(null);
         }
         return ret;
     }
+
+
+	/**
+	 * Checks if destination is an instance of Europe
+	 * 
+	 * @param unit
+	 * @param destination
+	 */
+	public void instOfEurope(Unit unit, Location destination) {
+		if (unit.hasTile()
+		    && unit.getTile().isDirectlyHighSeasConnected()) {
+		    moveTo(unit, destination);
+		} else {
+		    moveToDestination(unit, null);
+		}
+	}
+
+
+	/**
+	 * Checks if destination is in Europe
+	 * 
+	 * @param unit
+	 * @param destination
+	 */
+	public void destinationInEurope(Unit unit, Location destination) {
+		{
+		    if (unit.isInEurope()) {
+		        moveTo(unit, destination);
+		    } else {
+		        moveToDestination(unit, null);
+		    }
+		}
+	}
 
     /**
      * Sells goods in Europe.
