@@ -3124,7 +3124,27 @@ public final class InGameController implements NetworkConstants {
         // bonus center tile exception should be possible by this point.
         UnitWas unitWas = new UnitWas(unit);
         boolean ret = player.owns(tile);
-        if (!ret) {
+        ret = claimTileForColony(unit, tile, player, name, unitWas, ret);
+        return ret;
+    }
+
+
+	/**
+	 * Claim tile from other owners before founding a settlement.
+     * Only native owners that we can steal, buy from, or use a
+     * bonus center tile exception should be possible by this point.
+     * 
+	 * @param unit
+	 * @param tile
+	 * @param player
+	 * @param name
+	 * @param unitWas
+	 * @param ret
+	 * @return
+	 */
+	public boolean claimTileForColony(Unit unit, final Tile tile, final Player player, String name, UnitWas unitWas,
+			boolean ret) {
+		if (!ret) {
             ret = askClaimTile(player, tile, unit, player.getLandPrice(tile));
             if (!ret) NameCache.putSettlementName(player, name);
         }            
@@ -3142,8 +3162,8 @@ public final class InGameController implements NetworkConstants {
             }
             updateGUI(null);
         }
-        return ret;
-    }
+		return ret;
+	}
 
     /**
      * Buy goods in Europe.
@@ -3162,7 +3182,20 @@ public final class InGameController implements NetworkConstants {
             || !carrier.isInEurope()
             || !freeColClient.getMyPlayer().owns(carrier)) return false;
 
-        final Europe europe = carrier.getOwner().getEurope();
+        boolean ret = checkPurchase(type, amount, carrier);
+        return ret;
+    }
+
+
+	/**
+	 * Checks if purchase can be made successfully
+	 * @param type
+	 * @param amount
+	 * @param carrier
+	 * @return
+	 */
+	public boolean checkPurchase(GoodsType type, int amount, Unit carrier) {
+		final Europe europe = carrier.getOwner().getEurope();
         EuropeWas europeWas = new EuropeWas(europe);
         UnitWas unitWas = new UnitWas(carrier);
         boolean ret = askLoadGoods(europe, type, amount, carrier);
@@ -3172,8 +3205,8 @@ public final class InGameController implements NetworkConstants {
             unitWas.fireChanges();
             updateGUI(null);
         }
-        return ret;
-    }
+		return ret;
+	}
 
     /**
      * Chat with another player.
