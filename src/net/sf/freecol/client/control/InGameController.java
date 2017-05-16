@@ -4307,7 +4307,37 @@ public final class InGameController implements NetworkConstants {
 
         // Autoload?
         boolean update = false;
-        if (freeColClient.getClientOptions()
+        update = autoLoad(unit, update);
+
+        UnitWas unitWas = new UnitWas(unit);
+        boolean ret = askServer().moveTo(unit, destination);
+        ableMoveTo(update, unitWas, ret);
+        return ret;
+    }
+
+
+	/**
+	 * Checks if unit can move further and performs the action
+	 * @param update
+	 * @param unitWas
+	 * @param ret
+	 */
+	public void ableMoveTo(boolean update, UnitWas unitWas, boolean ret) {
+		if (ret) {
+            unitWas.fireChanges();
+            update = true;
+        }
+        if (update) updateGUI(null);
+	}
+
+
+	/**
+	 * @param unit
+	 * @param update
+	 * @return
+	 */
+	public boolean autoLoad(Unit unit, boolean update) {
+		if (freeColClient.getClientOptions()
             .getBoolean(ClientOptions.AUTOLOAD_EMIGRANTS)
             && unit.isInEurope()) {
             for (Unit u : unit.getOwner().getEurope().getUnitList()) {
@@ -4318,16 +4348,8 @@ public final class InGameController implements NetworkConstants {
                 }
             }
         }
-
-        UnitWas unitWas = new UnitWas(unit);
-        boolean ret = askServer().moveTo(unit, destination);
-        if (ret) {
-            unitWas.fireChanges();
-            update = true;
-        }
-        if (update) updateGUI(null);
-        return ret;
-    }
+		return update;
+	}
 
     /**
      * Moves the active unit in a specified direction. This may result in an
