@@ -5147,19 +5147,10 @@ public final class InGameController implements NetworkConstants {
         boolean ret = true;
         Colony colony = unit.getColony();
         if (colony != null) { // In colony, unload units and goods.
-            for (Unit u : unit.getUnitList()) {
-                ret = leaveShip(u) && ret;
-            }
-            for (Goods goods : unit.getGoodsList()) {
-                ret = unloadCargo(goods, false) && ret;
-            }
+            ret = unloadUnits(unit, ret);
         } else if (unit.isInEurope()) { // In Europe, unload non-boycotted goods
             Player player = freeColClient.getMyPlayer();
-            for (Goods goods : unit.getCompactGoodsList()) {
-                if (player.canTrade(goods.getType())) {
-                    ret = sellGoods(goods) && ret;
-                }
-            }
+            ret = nonBoycottedGoods(unit, ret, player);
             if (unit.hasGoodsCargo()) { // Goods left here must be dumped.
                 gui.showDumpCargoDialog(unit,
                     (List<Goods> goodsList) -> {
@@ -5167,13 +5158,63 @@ public final class InGameController implements NetworkConstants {
                     });
                 return false;
             }
-        } else { // Dump goods, units dislike jumping overboard
+        } else
+			ret = dumpGoods(unit, ret);
+        return ret;
+    }
+
+
+	/**
+	 * In the colony unloads the units and the goods
+	 * 
+	 * @param unit
+	 * @param ret
+	 * @return
+	 */
+	public boolean unloadUnits(Unit unit, boolean ret) {
+		for (Unit u : unit.getUnitList()) {
+		    ret = leaveShip(u) && ret;
+		}
+		for (Goods goods : unit.getGoodsList()) {
+		    ret = unloadCargo(goods, false) && ret;
+		}
+		return ret;
+	}
+
+
+	/**
+	 * In Europe checks for non-boycotted goods and unloads them
+	 * 
+	 * @param unit
+	 * @param ret
+	 * @param player
+	 * @return
+	 */
+	public boolean nonBoycottedGoods(Unit unit, boolean ret, Player player) {
+		for (Goods goods : unit.getCompactGoodsList()) {
+		    if (player.canTrade(goods.getType())) {
+		        ret = sellGoods(goods) && ret;
+		    }
+		}
+		return ret;
+	}
+
+
+	/**
+	 * Dump goods
+	 * 
+	 * @param unit
+	 * @param ret
+	 * @return
+	 */
+	public boolean dumpGoods(Unit unit, boolean ret) {
+		{ // Dump goods, units dislike jumping overboard
             for (Goods goods : unit.getGoodsList()) {
                 ret = unloadCargo(goods, false) && ret;
             }
         }
-        return ret;
-    }
+		return ret;
+	}
 
     /**
      * Unload cargo.  If the unit carrying the cargo is not in a
