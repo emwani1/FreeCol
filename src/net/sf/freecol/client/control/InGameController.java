@@ -4707,9 +4707,7 @@ public final class InGameController implements NetworkConstants {
         
             if (fcgo instanceof Settlement) {
                 Settlement settlement = (Settlement)fcgo;
-                if (settlement != null && settlement.getOwner() != null) {
-                    settlement.getOwner().removeSettlement(settlement);
-                }
+                instOfSettlement(settlement);
                 visibilityChange = true;//-vis(player)
                 
             } else if (fcgo instanceof Unit) {
@@ -4718,9 +4716,7 @@ public final class InGameController implements NetworkConstants {
                 if (u == gui.getActiveUnit()) gui.setActiveUnit(null);
 
                 // Temporary hack until we have real containers.
-                if (u != null && u.getOwner() != null) {
-                    u.getOwner().removeUnit(u);
-                }
+                tempHack(u);
                 visibilityChange = true;//-vis(player)
             }
 
@@ -4733,6 +4729,28 @@ public final class InGameController implements NetworkConstants {
 
         gui.refresh();
     }
+
+
+	/**
+	 * Temporary hack until we have real containers
+	 * 
+	 * @param u
+	 */
+	public void tempHack(Unit u) {
+		if (u != null && u.getOwner() != null) {
+		    u.getOwner().removeUnit(u);
+		}
+	}
+
+
+	/**
+	 * @param settlement
+	 */
+	public void instOfSettlement(Settlement settlement) {
+		if (settlement != null && settlement.getOwner() != null) {
+		    settlement.getOwner().removeSettlement(settlement);
+		}
+	}
         
     /**
      * Renames a <code>Nameable</code>.
