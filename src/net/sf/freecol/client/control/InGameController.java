@@ -4356,7 +4356,21 @@ public final class InGameController implements NetworkConstants {
         moveDirection(unit, direction, true);
         boolean ret = unit.getTile() != oldTile
             || unitWas.fireChanges();
-        if (ret) {
+        ableMoveUnit(unit, colonyWas, ret);
+        return ret;
+    }
+
+
+	/**
+	 * Checks if unit is able to move further and performs
+	 * the action 
+	 * 
+	 * @param unit
+	 * @param colonyWas
+	 * @param ret
+	 */
+	public void ableMoveUnit(Unit unit, ColonyWas colonyWas, boolean ret) {
+		if (ret) {
             if (colonyWas != null) colonyWas.fireChanges();
             updateGUI(null);
             if (!unit.couldMove() && unit.hasTile()) {
@@ -4365,8 +4379,7 @@ public final class InGameController implements NetworkConstants {
                 if (colony != null) colonyPanel(colony, unit);
             }
         }
-        return ret;
-    }
+	}
 
    /**
      * Move the tile cursor.
@@ -4744,6 +4757,9 @@ public final class InGameController implements NetworkConstants {
 
 
 	/**
+	 * Checks if FreeColGameObject is an instance of a 
+	 * settlement 
+	 * 
 	 * @param settlement
 	 */
 	public void instOfSettlement(Settlement settlement) {
