@@ -1577,7 +1577,13 @@ public final class InGameController implements NetworkConstants {
         Tile destinationTile = sourceTile.getNeighbourOrNull(direction);
         Unit carrier = null;
         List<ChoiceItem<Unit>> choices = new ArrayList<>();
-        carrier = addUnit(unit, destinationTile, carrier, choices);
+        for (Unit u : destinationTile.getUnitList()) {
+            if (u.canAdd(unit)) {
+                String m = u.getDescription(Unit.UnitLabelType.NATIONAL);
+                choices.add(new ChoiceItem<>(m, u));
+                carrier = u; // Save a default
+            }
+        }
         if (choices.isEmpty()) {
             throw new RuntimeException("Unit " + unit.getId()
                 + " found no carrier to embark upon.");
@@ -1601,25 +1607,6 @@ public final class InGameController implements NetworkConstants {
         unit.getOwner().invalidateCanSeeTiles();
         return false;
     }
-
-
-	/**
-	 * @param unit
-	 * @param destinationTile
-	 * @param carrier
-	 * @param choices
-	 * @return
-	 */
-	public Unit addUnit(Unit unit, Tile destinationTile, Unit carrier, List<ChoiceItem<Unit>> choices) {
-		for (Unit u : destinationTile.getUnitList()) {
-            if (u.canAdd(unit)) {
-                String m = u.getDescription(Unit.UnitLabelType.NATIONAL);
-                choices.add(new ChoiceItem<>(m, u));
-                carrier = u; // Save a default
-            }
-        }
-		return carrier;
-	}
 
     /**
      * Confirm exploration of a lost city rumour, following a move of
@@ -1746,18 +1733,7 @@ public final class InGameController implements NetworkConstants {
             List<Unit> waiting = (unit.getColony() != null)
                 ? unit.getTile().getUnitList()
                 : Collections.<Unit>emptyList();
-            for (Unit u : waiting) {
-                if (u.getState() != UnitState.SENTRY
-                    || !unit.couldCarry(u)) continue;
-                try {
-                    askEmbark(u, unit);
-                } finally {
-                    if (u.getLocation() != unit) {
-                        u.setState(UnitState.SKIPPED);
-                    }
-                    continue;
-                }
-            }
+            loadSentries(unit, waiting);
             // Boarding consumed this unit's moves.
             if (unit.getMovesLeft() <= 0) return false;
         }
@@ -1776,17 +1752,23 @@ public final class InGameController implements NetworkConstants {
 
         // Perform a short pause on an active unit's last move if
         // the option is enabled.
-        if (unit.getMovesLeft() <= 0
-            && options.getBoolean(ClientOptions.UNIT_LAST_MOVE_DELAY)) {
-            gui.paintImmediatelyCanvasInItsBounds();
-            try {
-                Thread.sleep(UNIT_LAST_MOVE_DELAY);
-            } catch (InterruptedException e) {} // Ignore
-        }
+        shortPause(unit, options);
 
         // Update the active unit and GUI.
         boolean ret = !unit.isDisposed() && !checkCashInTreasureTrain(unit);
-        if (ret) {
+        ret = updateActiveUnit(unit, tile, ret);
+        return ret;
+    }
+
+
+	/**
+	 * @param unit
+	 * @param tile
+	 * @param ret
+	 * @return
+	 */
+	public boolean updateActiveUnit(Unit unit, final Tile tile, boolean ret) {
+		if (ret) {
             if (tile.getColony() != null && unit.isCarrier()) {
                 final Colony colony = tile.getColony();
                 if (unit.getTradeRoute() == null
@@ -1796,8 +1778,43 @@ public final class InGameController implements NetworkConstants {
             }
             ret = unit.getMovesLeft() > 0;
         }
-        return ret;
-    }
+		return ret;
+	}
+
+
+	/**
+	 * @param unit
+	 * @param options
+	 */
+	public void shortPause(Unit unit, final ClientOptions options) {
+		if (unit.getMovesLeft() <= 0
+            && options.getBoolean(ClientOptions.UNIT_LAST_MOVE_DELAY)) {
+            gui.paintImmediatelyCanvasInItsBounds();
+            try {
+                Thread.sleep(UNIT_LAST_MOVE_DELAY);
+            } catch (InterruptedException e) {} // Ignore
+        }
+	}
+
+
+	/**
+	 * @param unit
+	 * @param waiting
+	 */
+	public void loadSentries(Unit unit, List<Unit> waiting) {
+		for (Unit u : waiting) {
+		    if (u.getState() != UnitState.SENTRY
+		        || !unit.couldCarry(u)) continue;
+		    try {
+		        askEmbark(u, unit);
+		    } finally {
+		        if (u.getLocation() != unit) {
+		            u.setState(UnitState.SKIPPED);
+		        }
+		        continue;
+		    }
+		}
+	}
 
     /**
      * Move to a foreign colony and either attack, negotiate with the
