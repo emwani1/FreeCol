@@ -2587,7 +2587,6 @@ public final class InGameController implements NetworkConstants {
 
     /**
      * Work out what goods to load onto a unit at a stop, and load them.
-     *
      * @param unit The <code>Unit</code> to load.
      * @param lb A <code>LogBuilder</code> to update.
      * @return True if goods were loaded.
@@ -2618,6 +2617,9 @@ public final class InGameController implements NetworkConstants {
 
 
 	/**
+	 * If already at capacity for a goods type, drop it from the
+	 * toLoad list, otherwise reduce its amount by the amount
+	 * already loaded.  Handle excess goods.
 	 * @param unit
 	 * @param lb
 	 * @param toLoad
@@ -2645,6 +2647,9 @@ public final class InGameController implements NetworkConstants {
 
 
 	/**
+	 * Adjust toLoad with the actual export amount.  Some goods
+     * may not have an export surplus.  Add messages for them and
+	 * drop from the toLoad list.
 	 * @param lb
 	 * @param stop
 	 * @param iterator
@@ -2669,6 +2674,7 @@ public final class InGameController implements NetworkConstants {
 
 
 	/**
+	 * Load the goods.
 	 * @param unit
 	 * @param lb
 	 * @param stop
@@ -2764,33 +2770,7 @@ public final class InGameController implements NetworkConstants {
             int toUnload = present;
             int atStop = trl.getImportAmount(type, 0);
             int amount = toUnload;
-            if (amount > atStop) {
-                StringTemplate locName = ((Location)trl).getLocationLabel();
-                int option = freeColClient.getClientOptions()
-                    .getInteger(ClientOptions.UNLOAD_OVERFLOW_RESPONSE);
-                switch (option) {
-                case ClientOptions.UNLOAD_OVERFLOW_RESPONSE_ASK:
-                    StringTemplate template = StringTemplate
-                        .template("traderoute.warehouseCapacity")
-                        .addStringTemplate("%unit%",
-                            unit.getLabel(Unit.UnitLabelType.NATIONAL))
-                        .addStringTemplate("%colony%", locName)
-                        .addAmount("%amount%", toUnload - atStop)
-                        .addNamed("%goods%", goods);
-                    if (!gui.confirm(unit.getTile(), template,
-                                     unit, "yes", "no")) amount = atStop;
-                    break;
-                case ClientOptions.UNLOAD_OVERFLOW_RESPONSE_NEVER:
-                    amount = atStop;
-                    break;
-                case ClientOptions.UNLOAD_OVERFLOW_RESPONSE_ALWAYS:
-                    break;
-                default:
-                    logger.warning("Illegal UNLOAD_OVERFLOW_RESPONSE: "
-                        + Integer.toString(option));
-                    break;
-                }
-            }
+            amount = checkAmt(unit, trl, goods, toUnload, atStop, amount);
 
             // Try to unload.
             ret = (amount == 0) ? false : askUnloadGoods(type, amount, unit);
@@ -2802,6 +2782,67 @@ public final class InGameController implements NetworkConstants {
 
         return ret;
     }
+
+
+	/**
+	 * Checks if the amount is greater than the atStop
+	 * @param unit
+	 * @param trl
+	 * @param goods
+	 * @param toUnload
+	 * @param atStop
+	 * @param amount
+	 * @return the amount 
+	 */
+	public int checkAmt(Unit unit, final TradeLocation trl, Goods goods, int toUnload, int atStop, int amount) {
+		if (amount > atStop) {
+		    StringTemplate locName = ((Location)trl).getLocationLabel();
+		    int option = freeColClient.getClientOptions()
+		        .getInteger(ClientOptions.UNLOAD_OVERFLOW_RESPONSE);
+		    amount = unloadOverFlowResponses(unit, goods, toUnload, atStop, amount, locName, option);
+		}
+		return amount;
+	}
+
+
+	/**
+	 * Goes through client options for unload overflow
+	 * responses
+	 * @param unit
+	 * @param goods
+	 * @param toUnload
+	 * @param atStop
+	 * @param amount
+	 * @param locName
+	 * @param option
+	 * @return
+	 */
+	public int unloadOverFlowResponses(Unit unit, Goods goods, int toUnload, int atStop, int amount,
+			StringTemplate locName, int option) {
+		switch (option) {
+		case ClientOptions.UNLOAD_OVERFLOW_RESPONSE_ASK:
+		    StringTemplate template = StringTemplate
+		        .template("traderoute.warehouseCapacity")
+		        .addStringTemplate("%unit%",
+		            unit.getLabel(Unit.UnitLabelType.NATIONAL))
+		        .addStringTemplate("%colony%", locName)
+		        .addAmount("%amount%", toUnload - atStop)
+		        .addNamed("%goods%", goods);
+		    if (!gui.confirm(unit.getTile(), template,
+		                     unit, "yes", "no")) amount = atStop;
+		    break;
+		case ClientOptions.UNLOAD_OVERFLOW_RESPONSE_NEVER:
+		    amount = atStop;
+		    break;
+		case ClientOptions.UNLOAD_OVERFLOW_RESPONSE_ALWAYS:
+		    break;
+		default:
+		    logger.warning("Illegal UNLOAD_OVERFLOW_RESPONSE: "
+		        + Integer.toString(option));
+		    break;
+		}
+		return amount;
+	}
 
     /**
      * Gets a message describing a goods unloading.
