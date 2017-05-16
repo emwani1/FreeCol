@@ -2604,7 +2604,26 @@ public final class InGameController implements NetworkConstants {
         // If already at capacity for a goods type, drop it from the
         // toLoad list, otherwise reduce its amount by the amount
         // already loaded.  Handle excess goods.
-        for (Goods g : unit.getCompactGoods()) {
+        checkCapacity(unit, lb, toLoad);
+
+        // Adjust toLoad with the actual export amount.  Some goods
+        // may not have an export surplus.  Add messages for them and
+        // drop from the toLoad list.
+        Iterator<AbstractGoods> iterator = toLoad.iterator();
+        actualExportAmt(lb, stop, iterator);
+        // Load the goods.
+        ret = loadGoods(unit, lb, stop, ret, toLoad);
+        return ret;
+    }
+
+
+	/**
+	 * @param unit
+	 * @param lb
+	 * @param toLoad
+	 */
+	public void checkCapacity(Unit unit, LogBuilder lb, List<AbstractGoods> toLoad) {
+		for (Goods g : unit.getCompactGoods()) {
             AbstractGoods ag = AbstractGoods.findByType(g.getType(), toLoad);
             if (ag != null) {
                 int goodsAmount = g.getAmount();
@@ -2622,12 +2641,16 @@ public final class InGameController implements NetworkConstants {
                         .addStringTemplate("%goods%", g.getLabel())));
             }                
         }
+	}
 
-        // Adjust toLoad with the actual export amount.  Some goods
-        // may not have an export surplus.  Add messages for them and
-        // drop from the toLoad list.
-        Iterator<AbstractGoods> iterator = toLoad.iterator();
-        while (iterator.hasNext()) {
+
+	/**
+	 * @param lb
+	 * @param stop
+	 * @param iterator
+	 */
+	public void actualExportAmt(LogBuilder lb, final TradeRouteStop stop, Iterator<AbstractGoods> iterator) {
+		while (iterator.hasNext()) {
             AbstractGoods ag = iterator.next();
             int amount = stop.getExportAmount(ag.getType(), 0);
             if (amount <= 0) {
@@ -2642,8 +2665,20 @@ public final class InGameController implements NetworkConstants {
                 ag.setAmount(Math.min(amount, ag.getAmount()));
             }
         }
-        // Load the goods.
-        for (AbstractGoods ag : toLoad) {
+	}
+
+
+	/**
+	 * @param unit
+	 * @param lb
+	 * @param stop
+	 * @param ret
+	 * @param toLoad
+	 * @return
+	 */
+	public boolean loadGoods(Unit unit, LogBuilder lb, final TradeRouteStop stop, boolean ret,
+			List<AbstractGoods> toLoad) {
+		for (AbstractGoods ag : toLoad) {
             GoodsType type = ag.getType();
             int demand = ag.getAmount();
             ret = askLoadGoods(stop.getLocation(), type, demand, unit);
@@ -2657,8 +2692,8 @@ public final class InGameController implements NetworkConstants {
             lb.add(" ", getLoadGoodsMessage(type, demand, present,
                                             export, demand));
         }
-        return ret;
-    }
+		return ret;
+	}
 
     /**
      * Gets a message describing a goods loading.
