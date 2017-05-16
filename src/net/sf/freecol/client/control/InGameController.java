@@ -3771,15 +3771,31 @@ public final class InGameController implements NetworkConstants {
         UnitWas unitWas = new UnitWas(unit);
         boolean ret = askServer().equipUnitForRole(unit, role, roleCount)
             && unit.getRole() == role;
-        if (ret) {
+        checkUnitRole(colonyWas, europeWas, marketWas, req, unitWas, ret);
+        return ret;
+    }
+
+
+	/**
+	 * Checks if the unit is taken 
+	 * 
+	 * @param colonyWas
+	 * @param europeWas
+	 * @param marketWas
+	 * @param req
+	 * @param unitWas
+	 * @param ret
+	 */
+	public void checkUnitRole(ColonyWas colonyWas, EuropeWas europeWas, MarketWas marketWas, List<AbstractGoods> req,
+			UnitWas unitWas, boolean ret) {
+		if (ret) {
             if (colonyWas != null) colonyWas.fireChanges();
             if (europeWas != null) europeWas.fireChanges();
             if (marketWas != null) marketWas.fireChanges(req);
             unitWas.fireChanges();
             updateGUI(null);
         }
-        return ret;
-    }
+	}
 
     /**
      * Display an error.
