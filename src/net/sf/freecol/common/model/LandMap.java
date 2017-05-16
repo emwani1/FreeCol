@@ -271,12 +271,16 @@ public class LandMap {
      * Remove any 1x1 islands on the map.
      */
     private void cleanMap() {
-        for (int y = 0; y < height; y++) {
+        checkIfSingle();
+    }
+
+	protected void checkIfSingle() {
+		for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 if (isSingleTile(x, y)) map[x][y] = false;
             }
         }
-    }
+	}
 
     /**
      * Do the given coordinates correspond to a location in the land map
@@ -314,7 +318,12 @@ public class LandMap {
         numberOfLandTiles++;
 
         Position p = new Position(x, y);
-        for (Direction direction : Direction.longSides) {
+        ret =  LandSetterRecursion(preferredDistanceToEdge, random, ret, p);
+        return ret;
+    }
+
+	private int LandSetterRecursion(int preferredDistanceToEdge, Random random, int ret, Position p) {
+		for (Direction direction : Direction.longSides) {
             Position n = new Position(p, direction);
             if (n.isValid(width, height)) {
                 ret += growLand(n.getX(), n.getY(), preferredDistanceToEdge,
@@ -322,7 +331,7 @@ public class LandMap {
             }
         }
         return ret;
-    }
+	}
 
     /**
      * Determines, based on position, number of adjacent land tiles

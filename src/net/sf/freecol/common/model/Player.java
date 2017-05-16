@@ -1452,7 +1452,7 @@ public class Player extends FreeColGameObject implements Nameable {
     protected boolean recalculateBellsBonus() {
         Set<Modifier> libertyBonus = getModifiers("model.goods.bells");
         boolean ret = false;
-        for (Ability ability : getAbilities(Ability.ADD_TAX_TO_BELLS)) {
+        for (Feature ability : getAbilities(Ability.ADD_TAX_TO_BELLS)) {
             FreeColObject source = ability.getSource();
             if (source != null) {
                 for (Modifier modifier : libertyBonus) {
@@ -3956,7 +3956,7 @@ public class Player extends FreeColGameObject implements Nameable {
 
         if (xw.validFor(this)) {
 
-            for (Ability ability : getSortedAbilities()) {
+            for (Feature ability : getSortedAbilities()) {
                 if (ability.isIndependent()) ability.toXML(xw);
             }
 

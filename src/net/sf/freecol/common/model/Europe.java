@@ -513,7 +513,7 @@ public class Europe extends UnitLocation
 
         if (xw.validFor(getOwner())) {
 
-            for (Ability ability : getSortedAbilities()) {
+            for (Feature ability : getSortedAbilities()) {
                 ability.toXML(xw);
             }
 

@@ -1707,7 +1707,7 @@ public class Unit extends GoodsLocation
         if (settlement == null) return null;
 
         final Specification spec = getSpecification();
-        for (Ability ability : autoDefence) {
+        for (Feature ability : autoDefence) {
             for (Scope scope : ability.getScopes()) {
                 Role role = spec.getRole(scope.getType());
                 if (role != null

@@ -1931,7 +1931,7 @@ public final class Specification {
         // scope was left hanging.
         FoundingFather brebeuf
             = getFoundingFather("model.foundingFather.fatherJeanDeBrebeuf");
-        for (Ability ability : brebeuf.getAbilities()) {
+        for (Feature ability : brebeuf.getAbilities()) {
             for (Scope scope : ability.getScopes()) {
                 if ("model.ability.missionary".equals(scope.getAbilityId())) {
                     scope.setAbilityId(Ability.ESTABLISH_MISSION);
@@ -2159,7 +2159,7 @@ public final class Specification {
 
         // automaticEquipment scope types are now roles
         for (NationType nt : indianNationTypes) {
-            for (Ability ability : nt.getAbilities(Ability.AUTOMATIC_EQUIPMENT)) {
+            for (Feature ability : nt.getAbilities(Ability.AUTOMATIC_EQUIPMENT)) {
                 for (Scope scope : ability.getScopes()) {
                     String type = scope.getType();
                     if ("model.equipment.indian.muskets".equals(type)) {
@@ -2173,7 +2173,7 @@ public final class Specification {
         {
             FoundingFather revere
                 = getFoundingFather("model.foundingFather.paulRevere");
-            for (Ability ability : revere.getAbilities(Ability.AUTOMATIC_EQUIPMENT)) {
+            for (Feature ability : revere.getAbilities(Ability.AUTOMATIC_EQUIPMENT)) {
                 for (Scope scope : ability.getScopes()) {
                     String type = scope.getType();
                     if ("model.equipment.muskets".equals(type)) {

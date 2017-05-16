@@ -190,7 +190,7 @@ public abstract class FreeColGameObjectType extends FreeColObject
     protected void writeChildren(FreeColXMLWriter xw) throws XMLStreamException {
         super.writeChildren(xw);
 
-        for (Ability ability : getSortedCopy(getAbilities())) {
+        for (Feature ability : getSortedCopy(getAbilities())) {
             ability.toXML(xw);
         }
 

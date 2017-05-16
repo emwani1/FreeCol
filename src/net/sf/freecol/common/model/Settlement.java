@@ -738,7 +738,7 @@ public abstract class Settlement extends GoodsLocation
             // Settlement contents only visible to the owner by default.
             super.writeChildren(xw);
 
-            for (Ability ability : getSortedAbilities()) {
+            for (Feature ability : getSortedAbilities()) {
                 if (ability.isIndependent()) ability.toXML(xw);
             }
 

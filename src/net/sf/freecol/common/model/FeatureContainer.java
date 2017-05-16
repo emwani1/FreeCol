@@ -164,7 +164,7 @@ public final class FeatureContainer {
             }
             Iterator<Ability> it = result.iterator();
             while (it.hasNext()) {
-                Ability a = it.next();
+                Feature a = it.next();
                 if (!a.appliesTo(fcgot, turn)) it.remove();
             }
         }
@@ -408,7 +408,7 @@ public final class FeatureContainer {
                 for (String key : ca) {
                     Set<Ability> abilitySet = abilities.get(key);
                     if (abilitySet == null) continue;
-                    for (Ability a : new HashSet<>(abilitySet)) {
+                    for (Feature a : new HashSet<>(abilitySet)) {
                         if (a.getSource() == fco) abilitySet.remove(a);
                     }
                 }
@@ -486,7 +486,7 @@ public final class FeatureContainer {
         Set<Ability> abilities = getAbilities(null, null, null);
         if (!abilities.isEmpty()) {
             sb.append(" [abilities");
-            for (Ability ability : getAbilities(null, null, null)) {
+            for (Feature ability : getAbilities(null, null, null)) {
                 sb.append(" ").append(ability);
             }
             sb.append("]");
