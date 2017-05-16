@@ -2097,10 +2097,7 @@ public final class InGameController implements NetworkConstants {
 
             // Choose goods to buy
             List<ChoiceItem<Goods>> choices = new ArrayList<>();
-            for (Goods g : forSale) {
-                String label = Messages.message(g.getLabel(true));
-                choices.add(new ChoiceItem<>(label, g));
-            }
+            goodsToBuy(forSale, choices);
             goods = gui.getChoice(unit.getTile(),
                                   Messages.message("buyProposition.text"),
                                   settlement,
@@ -2136,6 +2133,18 @@ public final class InGameController implements NetworkConstants {
         }
         return abortTrade;
     }
+
+
+	/**
+	 * @param forSale
+	 * @param choices
+	 */
+	public void goodsToBuy(List<Goods> forSale, List<ChoiceItem<Goods>> choices) {
+		for (Goods g : forSale) {
+		    String label = Messages.message(g.getLabel(true));
+		    choices.add(new ChoiceItem<>(label, g));
+		}
+	}
 
     /**
      * User interaction for selling to the natives.
