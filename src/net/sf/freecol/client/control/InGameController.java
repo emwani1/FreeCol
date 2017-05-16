@@ -2289,39 +2289,18 @@ public final class InGameController implements NetworkConstants {
         if (act == null) return true;
         switch (act) {
         case ESTABLISH_MISSION: case DENOUNCE_HERESY:
-            if (askServer().missionary(unit, direction,
-                    act == MissionaryAction.DENOUNCE_HERESY)
-                && settlement.hasMissionary(player)) {
-                sound("sound.event.missionEstablished");
-                player.invalidateCanSeeTiles();
-            }
+            establishMissionCase(unit, direction, settlement, player, act);
             break;
         case INCITE_INDIANS:
             List<ChoiceItem<Player>> choices = new ArrayList<>();
-            for (Player p : freeColClient.getGame().getLiveEuropeanPlayers(player)) {
-                String label = Messages.message(p.getCountryLabel());
-                choices.add(new ChoiceItem<>(label, p));
-            }
+            addChoicesII(player, choices);
             Player enemy = gui.getChoice(unit.getTile(),
                 Messages.message("missionarySettlement.inciteQuestion"),
                 unit,
                 "missionarySettlement.cancel", choices);
             if (enemy == null) return true;
             int gold = askServer().incite(unit, direction, enemy, -1);
-            if (gold < 0) {
-                // protocol fail
-            } else if (!player.checkGold(gold)) {
-                gui.showInformationMessage(settlement, StringTemplate
-                    .template("missionarySettlement.inciteGoldFail")
-                    .add("%player%", enemy.getName())
-                    .addAmount("%amount%", gold));
-            } else if (gui.confirm(unit.getTile(), StringTemplate
-                    .template("missionarySettlement.inciteConfirm")
-                    .add("%player%", enemy.getName())
-                    .addAmount("%amount%", gold),
-                    unit, "yes", "no")) {
-                askServer().incite(unit, direction, enemy, gold);
-            }
+            inciteIndiansCase(unit, direction, settlement, player, enemy, gold);
             break;
         default:
             logger.warning("showUseMissionaryDialog fail");
@@ -2329,6 +2308,63 @@ public final class InGameController implements NetworkConstants {
         }
         return false;
     }
+
+
+	/**
+	 * @param player
+	 * @param choices
+	 */
+	public void addChoicesII(Player player, List<ChoiceItem<Player>> choices) {
+		for (Player p : freeColClient.getGame().getLiveEuropeanPlayers(player)) {
+		    String label = Messages.message(p.getCountryLabel());
+		    choices.add(new ChoiceItem<>(label, p));
+		}
+	}
+
+
+	/**
+	 * @param unit
+	 * @param direction
+	 * @param settlement
+	 * @param player
+	 * @param act
+	 */
+	public void establishMissionCase(Unit unit, Direction direction, IndianSettlement settlement, Player player,
+			MissionaryAction act) {
+		if (askServer().missionary(unit, direction,
+		        act == MissionaryAction.DENOUNCE_HERESY)
+		    && settlement.hasMissionary(player)) {
+		    sound("sound.event.missionEstablished");
+		    player.invalidateCanSeeTiles();
+		}
+	}
+
+
+	/**
+	 * @param unit
+	 * @param direction
+	 * @param settlement
+	 * @param player
+	 * @param enemy
+	 * @param gold
+	 */
+	public void inciteIndiansCase(Unit unit, Direction direction, IndianSettlement settlement, Player player,
+			Player enemy, int gold) {
+		if (gold < 0) {
+		    // protocol fail
+		} else if (!player.checkGold(gold)) {
+		    gui.showInformationMessage(settlement, StringTemplate
+		        .template("missionarySettlement.inciteGoldFail")
+		        .add("%player%", enemy.getName())
+		        .addAmount("%amount%", gold));
+		} else if (gui.confirm(unit.getTile(), StringTemplate
+		        .template("missionarySettlement.inciteConfirm")
+		        .add("%player%", enemy.getName())
+		        .addAmount("%amount%", gold),
+		        unit, "yes", "no")) {
+		    askServer().incite(unit, direction, enemy, gold);
+		}
+	}
 
 
     // Trade route support.
