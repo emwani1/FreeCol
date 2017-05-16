@@ -2398,17 +2398,7 @@ public final class InGameController implements NetworkConstants {
 
         // Validate the whole route.
         boolean valid = true;
-        for (TradeRouteStop trs : stops) {
-            if (!TradeRoute.isStopValid(unit, trs)) {
-                lb.add(" ", Messages.message(trs.invalidStopLabel(player)));
-                valid = false;
-            }
-        }
-        if (!valid) {
-            clearOrders(unit);
-            stops.clear();
-            result = unit.getMovesLeft() > 0;
-        }
+        result = validateRoute(unit, player, stops, result, lb, valid);
 
         // Try to find work to do on the current list of stops.
         while (!stops.isEmpty()) {
@@ -2459,13 +2449,8 @@ public final class InGameController implements NetworkConstants {
             TradeRouteStop next = null;
             List<TradeRouteStop> moreStops = unit.getCurrentStops();
             if (unit.atStop(moreStops.get(0))) moreStops.remove(0);
-            for (TradeRouteStop trs : moreStops) {
-                if (trs.hasWork(unit, (!checkProduction) ? 0
-                                : unit.getTurnsToReach(trs.getLocation()))) {
-                    next = trs;
-                    break;
-                }
-            }
+            next = nextStopWithWork(unit, checkProduction, next, moreStops);
+            
             if (next == null) {
                 // No work was found anywhere on the trade route,
                 // so we should skip this unit.
@@ -2473,35 +2458,68 @@ public final class InGameController implements NetworkConstants {
                 unit.setState(UnitState.SKIPPED);
                 break;
             }
+            
             // Add a message for any skipped stops.
             List<TradeRouteStop> skipped
                 = tr.getStopSublist(stops.get(0), next);
-            if (!skipped.isEmpty()) {
-                StringTemplate t = StringTemplate.label("")
-                    .add("tradeRoute.skipped");
-                String sep = " ";
-                for (TradeRouteStop trs : skipped) {
-                    t.addName(sep)
-                        .addStringTemplate(trs.getLocation()
-                            .getLocationLabelFor(player));
-                    sep = ", ";
-                }
-                t.addName(".");
-                lb.add(" ", Messages.message(t));
-            }
+            addMessageSkippedSteps(player, lb, skipped);
             // Bring the next stop to the head of the stops list if it
             // is present.
-            while (!stops.isEmpty() && stops.get(0) != next) {
-                stops.remove(0);
-            }
+            stopToHead(stops, next);
             // Set the new stop, skip on error.
             if (!askServer().setCurrentStop(unit, tr.getIndex(next))) {
-                unit.setState(UnitState.SKIPPED);
-                break;
-            }
+    		    unit.setState(UnitState.SKIPPED);
+    		    break;
+    		}
         }
 
-        if (lb.grew()) {
+        logBuilderGrow(unit, messages, player, tr, lb);
+        return result;
+    }
+
+	/**
+	 * Brings the next stop to the head of the stops list if 
+	 * it is present 
+	 * @param stops
+	 * @param next
+	 */
+	public void stopToHead(final List<TradeRouteStop> stops, TradeRouteStop next) {
+		while (!stops.isEmpty() && stops.get(0) != next) {
+		    stops.remove(0);
+		}
+	}
+
+	/**
+	 * Finds the next stop with work to do 
+	 * @param unit
+	 * @param checkProduction
+	 * @param next
+	 * @param moreStops
+	 * @return
+	 */
+	public TradeRouteStop nextStopWithWork(Unit unit, final boolean checkProduction, TradeRouteStop next,
+			List<TradeRouteStop> moreStops) {
+		for (TradeRouteStop trs : moreStops) {
+		    if (trs.hasWork(unit, (!checkProduction) ? 0
+		                    : unit.getTurnsToReach(trs.getLocation()))) {
+		        next = trs;
+		        break;
+		    }
+		}
+		return next;
+	}
+
+
+	/**
+	 * @param unit
+	 * @param messages
+	 * @param player
+	 * @param tr
+	 * @param lb
+	 */
+	public void logBuilderGrow(Unit unit, List<ModelMessage> messages, final Player player, final TradeRoute tr,
+			LogBuilder lb) {
+		if (lb.grew()) {
             ModelMessage m = new ModelMessage(MessageType.GOODS_MOVEMENT,
                                               "tradeRoute.prefix", unit)
                 .addName("%route%", tr.getName())
@@ -2515,8 +2533,57 @@ public final class InGameController implements NetworkConstants {
                 turnReportMessages.add(m);
             }
         }
-        return result;
-    }
+	}
+
+
+	/**
+	 * Validates the whole route
+	 * @param unit
+	 * @param player
+	 * @param stops
+	 * @param result
+	 * @param lb
+	 * @param valid
+	 * @return
+	 */
+	public boolean validateRoute(Unit unit, final Player player, final List<TradeRouteStop> stops, boolean result,
+			LogBuilder lb, boolean valid) {
+		for (TradeRouteStop trs : stops) {
+            if (!TradeRoute.isStopValid(unit, trs)) {
+                lb.add(" ", Messages.message(trs.invalidStopLabel(player)));
+                valid = false;
+            }
+        }
+        if (!valid) {
+            clearOrders(unit);
+            stops.clear();
+            result = unit.getMovesLeft() > 0;
+        }
+		return result;
+	}
+
+
+	/**
+	 * Adds a message for any skipped steps 
+	 * @param player
+	 * @param lb
+	 * @param skipped
+	 */
+	public void addMessageSkippedSteps(final Player player, LogBuilder lb, List<TradeRouteStop> skipped) {
+		if (!skipped.isEmpty()) {
+		    StringTemplate t = StringTemplate.label("")
+		        .add("tradeRoute.skipped");
+		    String sep = " ";
+		    for (TradeRouteStop trs : skipped) {
+		        t.addName(sep)
+		            .addStringTemplate(trs.getLocation()
+		                .getLocationLabelFor(player));
+		        sep = ", ";
+		    }
+		    t.addName(".");
+		    lb.add(" ", Messages.message(t));
+		}
+	}
 
     /**
      * Work out what goods to load onto a unit at a stop, and load them.
