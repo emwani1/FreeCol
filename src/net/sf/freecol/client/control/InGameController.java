@@ -4161,15 +4161,26 @@ public final class InGameController implements NetworkConstants {
 
         boolean ret = askLoadGoods(goods.getLocation(), goods.getType(),
                                    goods.getAmount(), carrier);
-        if (ret) {
+        ableLoadCargo(carrierWas, sourceWas, colonyWas, ret);
+        return ret;
+    }
+
+
+	/**
+	 * @param carrierWas
+	 * @param sourceWas
+	 * @param colonyWas
+	 * @param ret
+	 */
+	public void ableLoadCargo(UnitWas carrierWas, UnitWas sourceWas, ColonyWas colonyWas, boolean ret) {
+		if (ret) {
             sound("sound.event.loadCargo");
             if (colonyWas != null) colonyWas.fireChanges();
             if (sourceWas != null) sourceWas.fireChanges();
             carrierWas.fireChanges();
             updateGUI(null);
         }
-        return ret;
-    }
+	}
 
     /**
      * Opens a dialog where the user should specify the filename and
