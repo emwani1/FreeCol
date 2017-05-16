@@ -183,7 +183,7 @@ public final class SpecificationTest extends FreeColTestCase {
         // The unknown enemy is deliberately absent from the European
         // nations list
         List<Nation> europeanNations = spec().getEuropeanNations();
-        assertEquals(8, europeanNations.size());
+        assertEquals(9, europeanNations.size());
 
         // 8 original native nations
         List<Nation> indianNations = spec().getIndianNations();
