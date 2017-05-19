@@ -83,7 +83,7 @@ import org.w3c.dom.NodeList;
  */
 public final class InGameInputHandler extends InputHandler {
 
-    private static final Logger logger = Logger.getLogger(InGameInputHandler.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(InGameInputHandler.class.getName());
 
     // A bunch of predefined non-closure runnables.
     private final Runnable closeMenusRunnable = () -> {
@@ -208,7 +208,7 @@ public final class InGameInputHandler extends InputHandler {
 
         Element reply;
         String type = element.getTagName();
-        logger.log(Level.FINEST, "Received: " + type);
+        LOGGER.log(Level.FINEST, "Received: " + type);
         switch (type) {
         case "disconnect":
             reply = disconnect(element); break; // Inherited
@@ -269,10 +269,10 @@ public final class InGameInputHandler extends InputHandler {
         case "update":
             reply = update(element); break;
         default:
-            logger.warning("Unsupported message type: " + type);
+            LOGGER.warning("Unsupported message type: " + type);
             return null;
         }
-        logger.log(Level.FINEST, "Handled message: " + type
+        LOGGER.log(Level.FINEST, "Handled message: " + type
             + " replying with: "
             + ((reply == null) ? "null" : reply.getTagName()));
 
@@ -305,7 +305,7 @@ public final class InGameInputHandler extends InputHandler {
             String owner = e.getAttribute("owner");
             Player player = game.getFreeColGameObject(owner, Player.class);
             if (player == null) {
-                logger.warning("addObject with broken owner: " + owner);
+                LOGGER.warning("addObject with broken owner: " + owner);
                 continue;
             }
 
@@ -329,7 +329,7 @@ public final class InGameInputHandler extends InputHandler {
                 player.getTradeRoutes().add(new TradeRoute(game, e));
 
             } else {
-                logger.warning("addObject unrecognized: " + tag);
+                LOGGER.warning("addObject unrecognized: " + tag);
             }
         }
         return null;
@@ -446,7 +446,7 @@ public final class InGameInputHandler extends InputHandler {
 
         String unitId = element.getAttribute("unit");
         if (unitId.isEmpty()) {
-            logger.warning("Animation for: " + player.getId()
+            LOGGER.warning("Animation for: " + player.getId()
                 + " missing unitId.");
             return null;
         }
@@ -456,7 +456,7 @@ public final class InGameInputHandler extends InputHandler {
             //if (u != null) logger.info("Added unit from element: " + unitId);
         }
         if (u == null) {
-            logger.warning("Animation for: " + player.getId()
+            LOGGER.warning("Animation for: " + player.getId()
                 + " missing unit:" + unitId);
             return null;
         }
@@ -464,26 +464,26 @@ public final class InGameInputHandler extends InputHandler {
 
         String oldTileId = element.getAttribute("oldTile");
         if (oldTileId.isEmpty()) {
-            logger.warning("Animation for: " + player.getId()
+            LOGGER.warning("Animation for: " + player.getId()
                 + " missing oldTileId");
             return null;
         }
         final Tile oldTile = game.getFreeColGameObject(oldTileId, Tile.class);
         if (oldTile == null) {
-            logger.warning("Animation for: " + player.getId()
+            LOGGER.warning("Animation for: " + player.getId()
                 + " missing oldTile: " + oldTileId);
             return null;
         }
 
         String newTileId = element.getAttribute("newTile");
         if (newTileId.isEmpty()) {
-            logger.warning("Animation for: " + player.getId()
+            LOGGER.warning("Animation for: " + player.getId()
                 + " missing newTileId");
             return null;
         }
         final Tile newTile = game.getFreeColGameObject(newTileId, Tile.class);
         if (newTile == null) {
-            logger.warning("Animation for: " + player.getId()
+            LOGGER.warning("Animation for: " + player.getId()
                 + " missing newTile: " + newTileId);
             return null;
         }
@@ -559,13 +559,13 @@ public final class InGameInputHandler extends InputHandler {
 
         final FreeColGameObject our = message.getOurFCGO(game);
         if (our == null) {
-            logger.warning("Our FCGO omitted from diplomacy message.");
+            LOGGER.warning("Our FCGO omitted from diplomacy message.");
             return null;
         }
 
         final FreeColGameObject other = message.getOtherFCGO(game);
         if (other == null) {
-            logger.warning("Other FCGO omitted from diplomacy message.");
+            LOGGER.warning("Other FCGO omitted from diplomacy message.");
             return null;
         }
 
@@ -597,7 +597,7 @@ public final class InGameInputHandler extends InputHandler {
             String id = FreeColObject.readId(e);
             Unit u = game.getFreeColGameObject(id, Unit.class);
             if (u == null) {
-                logger.warning("Object is not a unit");
+                LOGGER.warning("Object is not a unit");
             } else {
                 u.dispose();
             }
@@ -634,7 +634,7 @@ public final class InGameInputHandler extends InputHandler {
         String id = FreeColObject.readId(element);
         FreeColGameObject object = game.getFreeColGameObject(id);
         if (object == null) {
-            logger.warning("featureChange with null object");
+            LOGGER.warning("featureChange with null object");
             return null;
         }
 
@@ -658,7 +658,7 @@ public final class InGameInputHandler extends InputHandler {
                 }
 
             } else {
-                logger.warning("featureChange unrecognized: " + tag);
+                LOGGER.warning("featureChange unrecognized: " + tag);
             }
         }
         return null;
@@ -678,17 +678,17 @@ public final class InGameInputHandler extends InputHandler {
 
         final Player player = message.getPlayer(game);
         if (player == null || player != getFreeColClient().getMyPlayer()) {
-            logger.warning("firstContact with bad player: " + player);
+            LOGGER.warning("firstContact with bad player: " + player);
             return null;
         }
         final Player other = message.getOtherPlayer(game);
         if (other == null || other == player || !other.isIndian()) {
-            logger.warning("firstContact with bad other player: " + other);
+            LOGGER.warning("firstContact with bad other player: " + other);
             return null;
         }
         final Tile tile = message.getTile(game);
         if (tile != null && tile.getOwner() != other) {
-            logger.warning("firstContact with bad tile: " + tile);
+            LOGGER.warning("firstContact with bad tile: " + tile);
             return null;
         }
         final int n = message.getSettlementCount();
@@ -707,7 +707,7 @@ public final class InGameInputHandler extends InputHandler {
     private Element fountainOfYouth(Element element) {
         final int n = getIntegerAttribute(element, "migrants");
         if (n <= 0) {
-            logger.warning("Invalid migrants attribute: "
+            LOGGER.warning("Invalid migrants attribute: "
                 + element.getAttribute("migrants"));
             return null;
         }
@@ -730,7 +730,7 @@ public final class InGameInputHandler extends InputHandler {
             = getGame().getFreeColGameObject(element.getAttribute("winner"),
                                              Player.class);
         if (winner == null) {
-            logger.warning("Invalid player for gameEnded");
+            LOGGER.warning("Invalid player for gameEnded");
             return null;
         }
         final String highScore = element.getAttribute("highScore");
@@ -756,13 +756,13 @@ public final class InGameInputHandler extends InputHandler {
             = new IndianDemandMessage(game, element);
         final Unit unit = message.getUnit(game);
         if (unit == null) {
-            logger.warning("IndianDemand with null unit: "
+            LOGGER.warning("IndianDemand with null unit: "
                 + element.getAttribute("unit"));
             return null;
         }
         final Colony colony = message.getColony(game);
         if (colony == null) {
-            logger.warning("IndianDemand with null colony: "
+            LOGGER.warning("IndianDemand with null colony: "
                 + element.getAttribute("colony"));
             return null;
         } else if (!player.owns(colony)) {
@@ -830,7 +830,7 @@ public final class InGameInputHandler extends InputHandler {
                 Element reply = handle(connection, (Element)nodes.item(i));
                 if (reply != null) results.add(reply);
             } catch (Exception e) {
-                logger.log(Level.WARNING, "Caught crash in multiple item " + i
+                LOGGER.log(Level.WARNING, "Caught crash in multiple item " + i
                     + ", continuing.", e);
             }
         }
@@ -888,7 +888,7 @@ public final class InGameInputHandler extends InputHandler {
     private Element newTurn(Element element) {
         final int n = getIntegerAttribute(element, "turn");
         if (n < 0) {
-            logger.warning("Invalid turn for newTurn");
+            LOGGER.warning("Invalid turn for newTurn");
             return null;
         }
 
@@ -904,7 +904,7 @@ public final class InGameInputHandler extends InputHandler {
      * @return Null.
      */
     private Element reconnect(@SuppressWarnings("unused") Element element) {
-        logger.finest("Entered reconnect.");
+        LOGGER.finest("Entered reconnect.");
 
         invokeLater(reconnectRunnable);
         return null;
@@ -971,7 +971,7 @@ public final class InGameInputHandler extends InputHandler {
             = getGame().getFreeColGameObject(element.getAttribute("player"),
                                              Player.class);
         if (player == null) {
-            logger.warning("Invalid player for setCurrentPlayer");
+            LOGGER.warning("Invalid player for setCurrentPlayer");
             return null;
         }
 
@@ -990,7 +990,7 @@ public final class InGameInputHandler extends InputHandler {
         final Player player = getGame()
             .getFreeColGameObject(element.getAttribute("player"),Player.class);
         if (player == null) {
-            logger.warning("Invalid player for setDead");
+            LOGGER.warning("Invalid player for setDead");
             return null;
         }
 
@@ -1010,19 +1010,19 @@ public final class InGameInputHandler extends InputHandler {
         final Stance stance = Enum.valueOf(Stance.class,
                                            element.getAttribute("stance"));
         if (stance == null) {
-            logger.warning("Invalid stance for setStance");
+            LOGGER.warning("Invalid stance for setStance");
             return null;
         }
         final Player p1 = game
             .getFreeColGameObject(element.getAttribute("first"), Player.class);
         if (p1 == null) {
-            logger.warning("Invalid player1 for setStance");
+            LOGGER.warning("Invalid player1 for setStance");
             return null;
         }
         final Player p2 = game
             .getFreeColGameObject(element.getAttribute("second"),Player.class);
         if (p2 == null) {
-            logger.warning("Invalid player2 for setStance");
+            LOGGER.warning("Invalid player2 for setStance");
             return null;
         }
 
@@ -1047,7 +1047,7 @@ public final class InGameInputHandler extends InputHandler {
         // information, but the potential abuses are limited.
         NodeList nodeList = element.getChildNodes();
         if (nodeList.getLength() != 2) {
-            logger.warning("spyResult length = " + nodeList.getLength());
+            LOGGER.warning("spyResult length = " + nodeList.getLength());
             return null;
         }
 
@@ -1055,7 +1055,7 @@ public final class InGameInputHandler extends InputHandler {
         final String tileId = element.getAttribute("tile");
         final Tile tile = game.getFreeColGameObject(tileId, Tile.class);
         if (tile == null) {
-            logger.warning("spyResult bad tile = " + tileId);
+            LOGGER.warning("spyResult bad tile = " + tileId);
             return null;
         }
 
@@ -1091,7 +1091,7 @@ public final class InGameInputHandler extends InputHandler {
             String id = FreeColObject.readId(e);
             FreeColGameObject fcgo = getGame().getFreeColGameObject(id);
             if (fcgo == null) {
-                logger.warning("Update object not present in client: " + id);
+                LOGGER.warning("Update object not present in client: " + id);
             } else {
                 fcgo.readFromXMLElement(e);
             }

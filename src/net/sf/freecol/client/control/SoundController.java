@@ -39,7 +39,7 @@ import net.sf.freecol.common.sound.SoundPlayer;
  */
 public class SoundController {
 
-    private static final Logger logger = Logger.getLogger(SoundController.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(SoundController.class.getName());
 
 
     private SoundPlayer soundPlayer;
@@ -58,12 +58,12 @@ public class SoundController {
             Option amo = opts.getOption(ClientOptions.AUDIO_MIXER);
             Option vo = opts.getOption(ClientOptions.AUDIO_VOLUME);
             if (!(amo instanceof AudioMixerOption)) {
-                logger.warning(ClientOptions.AUDIO_MIXER + " is not an AudioMixerOption");
+                LOGGER.warning(ClientOptions.AUDIO_MIXER + " is not an AudioMixerOption");
             } else if (!(vo instanceof PercentageOption)) {
-                logger.warning(ClientOptions.AUDIO_VOLUME + " is not a PercentageOption");
+                LOGGER.warning(ClientOptions.AUDIO_VOLUME + " is not a PercentageOption");
             } else {
                 try {
-                    logger.log(Level.INFO, "Create sound controller with "
+                    LOGGER.log(Level.INFO, "Create sound controller with "
                         + amo + "/" + vo);
                         //+ " mixer /" + amo.getValue().toString()
                         //+ "/, volume " + volume.getValue().toString());
@@ -74,7 +74,7 @@ public class SoundController {
                     // AudioSystem.getMixer(null).  Workaround this and other
                     // such failures by just disabling sound.
                     this.soundPlayer = null;
-                    logger.log(Level.WARNING, "Sound disabled", e);
+                    LOGGER.log(Level.WARNING, "Sound disabled", e);
                 }
             }
         }
@@ -105,7 +105,7 @@ public class SoundController {
             if (file != null) {
                 soundPlayer.playOnce(file);
             }
-            logger.finest(((file == null)
+            LOGGER.finest(((file == null)
                 ? "Could not load"
                 : "Playing") + " sound: " + sound);
         }
