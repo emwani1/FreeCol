@@ -49,7 +49,7 @@ import org.w3c.dom.NodeList;
  */
 public final class PreGameInputHandler extends InputHandler {
 
-    private static final Logger logger = Logger.getLogger(PreGameInputHandler.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(PreGameInputHandler.class.getName());
 
 
     /**
@@ -177,7 +177,7 @@ public final class PreGameInputHandler extends InputHandler {
         String playerId = element.getAttribute("player");
         String reason = element.getAttribute("reason");
         if (reason != null && !reason.isEmpty()) {
-            logger.info("Client logging out: " + reason);
+            LOGGER.info("Client logging out: " + reason);
         }
 
         Player player = game.getFreeColGameObject(playerId, Player.class);
@@ -280,7 +280,9 @@ public final class PreGameInputHandler extends InputHandler {
                     while (getFreeColClient().getGame().getMap() == null) {
                         try {
                             Thread.sleep(200);
-                        } catch (Exception ex) {}
+                        } catch (Exception ex) {
+                        	
+                        }
                     }
                     
                     SwingUtilities.invokeLater(() -> {
@@ -305,7 +307,7 @@ public final class PreGameInputHandler extends InputHandler {
         String str = element.getAttribute("nation");
         Nation nation = spec.getNation(str);
         if (nation == null) {
-            logger.warning("Invalid nation: " + str);
+            LOGGER.warning("Invalid nation: " + str);
             return null;
         }
         Color color;
@@ -314,7 +316,7 @@ public final class PreGameInputHandler extends InputHandler {
             int rgb = Integer.parseInt(str);
             color = new Color(rgb);
         } catch (NumberFormatException nfe) {
-            logger.warning("Invalid color: " + str);
+            LOGGER.warning("Invalid color: " + str);
             return null;
         }
         nation.setColor(color);
@@ -337,7 +339,7 @@ public final class PreGameInputHandler extends InputHandler {
             game.readFromXMLElement((Element)children.item(0));
             fcc.addSpecificationActions(game.getSpecification());
         } else {
-            logger.warning("Child node expected: " + element.getTagName());
+            LOGGER.warning("Child node expected: " + element.getTagName());
         }
         return null;
     }

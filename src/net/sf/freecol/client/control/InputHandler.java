@@ -35,7 +35,7 @@ import org.w3c.dom.Element;
  */
 public abstract class InputHandler implements MessageHandler {
 
-    private static final Logger logger = Logger.getLogger(InputHandler.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(InputHandler.class.getName());
 
     /** The main FreeCol client object. */
     private final FreeColClient freeColClient;
@@ -122,7 +122,7 @@ public abstract class InputHandler implements MessageHandler {
      * @return Null.
      */
     protected Element unknown(Element element) {
-        logger.warning("Unknown message type: " + element.getTagName());
+        LOGGER.warning("Unknown message type: " + element.getTagName());
         return null;
     }
 }
